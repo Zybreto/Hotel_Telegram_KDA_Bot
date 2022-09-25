@@ -22,6 +22,15 @@ class Database:
 
 
 class Users(Database):
+    """
+    ___________________________________________________________________
+    |   tg_id   |      surname    |     name     |     patronymic     |
+    |-----------|-----------------|--------------|--------------------|
+    | 123456789 | example_surname | example_name | example_patronymic |
+    |   ....    |       ...       |      ...     |        ...         |
+    -------------------------------------------------------------------
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -33,8 +42,20 @@ class Users(Database):
 
         self.create_table(self.table_name, self.table_columns)
 
+    def create_user(self):
+        ...
+
 
 class BankCards(Database):
+    """
+    ____________________________________________________________________________________________
+    |   tg_id   |    card_number   |  holders_name  |   validity_month   | validity_year | cvv |
+    |-----------|------------------|----------------|--------------------|---------------------|
+    | 123456789 | 1234123412341234 | example_h_name |   example_month    | example_year  | 123 |
+    |    ...    |       ...        |      ...       |        ...         |      ...      | ... |
+    --------------------------------------------------------------------------------------------
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -50,6 +71,15 @@ class BankCards(Database):
 
 
 class RoomCondition(Database):
+    """
+    ____________________________________________________________
+    | room_id | occupancy_status | entry_date | departure_date |
+    |---------|------------------|------------|----------------|
+    |   123   |         1        | 12.01.2022 |   15.01.2022   |
+    |   ...   |        ...       |     ...    |      ...       |
+    ------------------------------------------------------------
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -57,12 +87,21 @@ class RoomCondition(Database):
         self.table_columns = 'room_id INTEGER,' \
                              'occupancy_status INTEGER,' \
                              'entry_date timestamp,' \
-                             'departure_date'
+                             'departure_date timestamp'
 
         self.create_table(self.table_name, self.table_columns)
 
 
 class RoomCharacteristics(Database):
+    """
+    _______________________________________________________________________________________________
+    | room_id | room_type | room_cost | single_beds_num | double_beds_num | sofas_num | additions |
+    |---------|-----------|-----------|-----------------|-----------------|-----------------------|
+    |   123   | standard  |    1234   |        2        |         0       |     0     | some_text |
+    |   ...   |    ...    |    ...    |       ...       |        ...      |    ...    |    ...    |
+    -----------------------------------------------------------------------------------------------
+    """
+
     def __init__(self):
         super().__init__()
 
