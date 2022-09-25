@@ -1,19 +1,18 @@
 import sqlite3
 
-from config import database
+from config import database_path
 
 
 class Database:
     def __init__(self):
-        self.db = sqlite3.connect(database)
+        self.db = sqlite3.connect(database_path)
         self.cursor = self.db.cursor()
-        self.create_table()
 
     def __del__(self):
         self.close()
 
-    def create_table(self):
-        self.cursor.execute("""CREATE TABLE IF NOT EXISTS users(login TEXT, password TEXT, score INTEGER)""")
+    def create_table(self, table_name, table_columns):
+        self.cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}({table_columns})""")
 
     def commit(self):
         self.db.commit()
@@ -21,42 +20,59 @@ class Database:
     def close(self):
         self.db.close()
 
-    def get_user_logins(self):
-        self.cursor.execute("""SELECT login FROM users""")
-        return self.cursor.fetchall()
 
-    def new_user(self, login, password):
-        if (login, ) in self.get_user_logins():
-            return 0
-        self.cursor.execute("""INSERT INTO users (login, password) VALUES(?, ?)""", (login, password))
-        self.commit()
-        return 1
+class Users(Database):
+    def __init__(self):
+        super().__init__()
 
-    def del_user(self, login):
-        self.cursor.execute("""DELETE FROM users WHERE login == ?""", (login, ))
-        self.commit()
+        self.table_name = 'users'
+        self.table_columns = 'tg_id INTEGER,' \
+                             'surname TEXT,' \
+                             'name TEXT,' \
+                             'patronymic TEXT'
 
-    def authentication(self, login, password):
-        login = (login, )
+        self.create_table(self.table_name, self.table_columns)
 
-        user_password = self.cursor.execute("""SELECT password FROM users WHERE login == ?""", login).fetchone()
-        if user_password is None:
-            return 'login_error'
-        if password == user_password[0]:
-            return 'successful'
-        return 'pass_error'
 
-    def change_password(self, login, new_password):
-        self.cursor.execute("""UPDATE users set password = ? WHERE login == ?""", (new_password, login))
-        self.commit()
+class BankCards(Database):
+    def __init__(self):
+        super().__init__()
 
-    def get_user_score(self, login):
-        score = self.cursor.execute("""SELECT score FROM users WHERE login == ?""", (login,)).fetchone()[0]
-        return int(score) if isinstance(score, int) else 0
+        self.table_name = 'bank_cards'
+        self.table_columns = 'tg_id INTEGER,' \
+                             'card_number INTEGER,' \
+                             'holders_name TEXT,' \
+                             'validity_month INTEGER,' \
+                             'validity_year INTEGER,' \
+                             'cvv INTEGER'
 
-    def change_score(self, login, score):
-        self.cursor.execute("""UPDATE users set score = ? WHERE login == ?""", (score, login))
-        self.commit()
+        self.create_table(self.table_name, self.table_columns)
 
-    def top_score(self, vol: int = 10) -> list:
-        return self.cursor.execute("""SELECT login, score FROM users ORDER BY score DESC""").fetchmany(vol)
+
+class RoomCondition(Database):
+    def __init__(self):
+        super().__init__()
+
+        self.table_name = 'room_condition'
+        self.table_columns = 'room_id INTEGER,' \
+                             'occupancy_status INTEGER,' \
+                             'entry_date timestamp,' \
+                             'departure_date'
+
+        self.create_table(self.table_name, self.table_columns)
+
+
+class RoomCharacteristics(Database):
+    def __init__(self):
+        super().__init__()
+
+        self.table_name = 'room_characteristics'
+        self.table_columns = 'room_id INTEGER,' \
+                             'room_type TEXT,' \
+                             'room_cost INTEGER,' \
+                             'single_beds_num INTEGER,' \
+                             'double_beds_num INTEGER,' \
+                             'sofas_num INTEGER,' \
+                             'additions TEXT'
+
+        self.create_table(self.table_name, self.table_columns)
