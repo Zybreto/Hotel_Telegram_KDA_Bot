@@ -1,117 +1,100 @@
 import sqlite3
 
-from config import database_path
+from config import *
+
+"""
+users table:
+___________________________________________________________________
+|   tg_id   |      surname    |     name     |     patronymic     |
+|-----------|-----------------|--------------|--------------------|
+| 123456789 | example_surname | example_name | example_patronymic |
+|   ....    |       ...       |      ...     |        ...         |
+-------------------------------------------------------------------
 
 
-class Database:
-    def __init__(self):
-        self.db = sqlite3.connect(database_path)
-        self.cursor = self.db.cursor()
-
-    def __del__(self):
-        self.close()
-
-    def create_table(self, table_name, table_columns):
-        self.cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}({table_columns})""")
-
-    def commit(self):
-        self.db.commit()
-
-    def close(self):
-        self.db.close()
+bank_cards table:
+___________________________________________________________________________________________________________
+|   tg_id   |  card_name   |    card_number   |  holders_name  |   validity_month   | validity_year | cvv |
+|-----------|--------------|------------------|----------------|--------------------|---------------------|
+| 123456789 | example_name | 1234123412341234 | example_h_name |   example_month    | example_year  | 123 |
+|    ...    |     ...      |       ...        |      ...       |        ...         |      ...      | ... |
+-----------------------------------------------------------------------------------------------------------
 
 
-class Users(Database):
-    """
-    ___________________________________________________________________
-    |   tg_id   |      surname    |     name     |     patronymic     |
-    |-----------|-----------------|--------------|--------------------|
-    | 123456789 | example_surname | example_name | example_patronymic |
-    |   ....    |       ...       |      ...     |        ...         |
-    -------------------------------------------------------------------
-    """
-
-    def __init__(self):
-        super().__init__()
-
-        self.table_name = 'users'
-        self.table_columns = 'tg_id INTEGER,' \
-                             'surname TEXT,' \
-                             'name TEXT,' \
-                             'patronymic TEXT'
-
-        self.create_table(self.table_name, self.table_columns)
-
-    def create_user(self):
-        ...
+room_condition table:
+____________________________________________________________
+| room_id | occupancy_status | entry_date | departure_date |
+|---------|------------------|------------|----------------|
+|   123   |         1        | 12.01.2022 |   15.01.2022   |
+|   ...   |        ...       |     ...    |      ...       |
+------------------------------------------------------------
 
 
-class BankCards(Database):
-    """
-    ____________________________________________________________________________________________
-    |   tg_id   |    card_number   |  holders_name  |   validity_month   | validity_year | cvv |
-    |-----------|------------------|----------------|--------------------|---------------------|
-    | 123456789 | 1234123412341234 | example_h_name |   example_month    | example_year  | 123 |
-    |    ...    |       ...        |      ...       |        ...         |      ...      | ... |
-    --------------------------------------------------------------------------------------------
-    """
-
-    def __init__(self):
-        super().__init__()
-
-        self.table_name = 'bank_cards'
-        self.table_columns = 'tg_id INTEGER,' \
-                             'card_number INTEGER,' \
-                             'holders_name TEXT,' \
-                             'validity_month INTEGER,' \
-                             'validity_year INTEGER,' \
-                             'cvv INTEGER'
-
-        self.create_table(self.table_name, self.table_columns)
+room_characteristics table:
+_______________________________________________________________________________________________
+| room_id | room_type | room_cost | single_beds_num | double_beds_num | sofas_num | additions |
+|---------|-----------|-----------|-----------------|-----------------|-----------------------|
+|   123   | standard  |    1234   |        2        |         0       |     0     | some_text |
+|   ...   |    ...    |    ...    |       ...       |        ...      |    ...    |    ...    |
+-----------------------------------------------------------------------------------------------
+"""
 
 
-class RoomCondition(Database):
-    """
-    ____________________________________________________________
-    | room_id | occupancy_status | entry_date | departure_date |
-    |---------|------------------|------------|----------------|
-    |   123   |         1        | 12.01.2022 |   15.01.2022   |
-    |   ...   |        ...       |     ...    |      ...       |
-    ------------------------------------------------------------
-    """
-
-    def __init__(self):
-        super().__init__()
-
-        self.table_name = 'room_condition'
-        self.table_columns = 'room_id INTEGER,' \
-                             'occupancy_status INTEGER,' \
-                             'entry_date timestamp,' \
-                             'departure_date timestamp'
-
-        self.create_table(self.table_name, self.table_columns)
+db = sqlite3.connect(database_path)
+cursor = db.cursor()
 
 
-class RoomCharacteristics(Database):
-    """
-    _______________________________________________________________________________________________
-    | room_id | room_type | room_cost | single_beds_num | double_beds_num | sofas_num | additions |
-    |---------|-----------|-----------|-----------------|-----------------|-----------------------|
-    |   123   | standard  |    1234   |        2        |         0       |     0     | some_text |
-    |   ...   |    ...    |    ...    |       ...       |        ...      |    ...    |    ...    |
-    -----------------------------------------------------------------------------------------------
-    """
+def create_table(name: str, columns: str):
+    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {name}({columns})""")
 
-    def __init__(self):
-        super().__init__()
 
-        self.table_name = 'room_characteristics'
-        self.table_columns = 'room_id INTEGER,' \
-                             'room_type TEXT,' \
-                             'room_cost INTEGER,' \
-                             'single_beds_num INTEGER,' \
-                             'double_beds_num INTEGER,' \
-                             'sofas_num INTEGER,' \
-                             'additions TEXT'
+def _commit():
+    db.commit()
 
-        self.create_table(self.table_name, self.table_columns)
+
+def close():
+    db.close()
+
+
+def _get_all_tg_id():
+    cursor.execute("""SELECT tg_id FROM users""")
+    return cursor.fetchall()
+
+
+def _get_all_card_numbers():
+    cursor.execute("""SELECT card_number FROM bank_cards""")
+    return cursor.fetchall()
+
+
+def create_user(tg_id: int, surname: str, name: str, patronymic: str):
+    if (tg_id,) in _get_all_tg_id():
+        return
+    cursor.execute("""INSERT INTO users (tg_id, surname, name, patronymic) VALUES(?, ?, ?, ?)""",
+                   (tg_id, surname, name, patronymic))
+    _commit()
+    return 1
+
+
+def del_user(tg_id: int):
+    cursor.execute("""DELETE FROM users WHERE tg_id == ?""", (tg_id, ))
+    cursor.execute("""DELETE FROM bank_cards WHERE tg_id == ?""", (tg_id, ))
+    _commit()
+
+
+def add_new_bank_card(tg_id: int, card_number: int, holders_name: str, validity_month: int, validity_year: int, cvv: int):
+    if (card_number, ) in _get_all_card_numbers():
+        return
+    cursor.execute("""INSERT INTO bank_cards (tg_id, card_number, holders_name, validity_month, validity_year, cvv) VALUES(?, ?, ?, ?, ?, ?)""",
+                   (tg_id, card_number, holders_name, validity_month, validity_year, cvv))
+    _commit()
+    return 1
+
+
+def get_user_cards(tg_id):
+    cursor.execute("""SELECT card_name, card_number FROM bank_cards WHERE tg_id == ?""", (tg_id, ))
+    return cursor.fetchall()
+
+
+def del_bank_card(card_name):
+    cursor.execute("""DELETE FROM bank_cards WHERE card_name == ?""", (card_name, ))
+    _commit()
