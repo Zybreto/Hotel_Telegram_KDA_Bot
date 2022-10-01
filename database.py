@@ -44,6 +44,7 @@ db = sqlite3.connect(database_path)
 cursor = db.cursor()
 
 
+# функции общего назначения
 def create_table(name: str, columns: str):
     """создает таблицу с названием name и столбцами columns, если ее нет в БД"""
     cursor.execute(f"""CREATE TABLE IF NOT EXISTS {name}({columns})""")
@@ -59,6 +60,7 @@ def close():
     db.close()
 
 
+# работа с таблицей users
 def _get_all_tg_id():
     """возвращает кортеж со всеми tg_id из таблицы users"""
     cursor.execute("""SELECT tg_id FROM users""")
@@ -89,7 +91,8 @@ def del_user(tg_id: int):
     _commit()
 
 
-def add_new_bank_card(tg_id: int, card_number: int, holders_name: str, validity_month: int, validity_year: int, cvv: int):
+# работа с таблицей bank_cards
+def add_bank_card(tg_id: int, card_number: int, holders_name: str, validity_month: int, validity_year: int, cvv: int):
     """производит проверку на наличие card_number, в случае его отсутствия создает карту с таким card_number,
        иначе ничего не происходит"""
     if (card_number, ) in _get_all_card_numbers():
@@ -110,3 +113,38 @@ def del_bank_card(card_name):
     """удаляет данные карты по card_name"""
     cursor.execute("""DELETE FROM bank_cards WHERE card_name == ?""", (card_name, ))
     _commit()
+
+
+# работа с room_condition
+def add_room_condition(room_id: int, occupancy_status: int, entry_date: int, departure_date: int):
+    """добавляет данные по состоянию номера"""
+    cursor.execute("""INSERT INTO room_condition (room_id, occupancy_status, entry_date, departure_date) VALUES(?, ?, ?, ?, ?, ?)""",
+                   (room_id, occupancy_status, entry_date, departure_date))
+    _commit()
+
+
+def get_all_room_condition():
+    """возвращает данные по состоянию всех номеров"""
+    cursor.execute("""SELECT room_id, occupancy_status, entry_date, departure_date FROM room_condition""")
+    return cursor.fetchall()
+
+
+def get_room_condition(room_id: int):
+    cursor.execute("""SELECT occupancy_status, entry_date, departure_date FROM room_condition WHERE room_id == ?""",
+                   (room_id, ))
+    return cursor.fetchall()
+
+
+# работа с room_characteristics
+def add_room_characteristics(room_id: int, room_type: str, room_cost: int, single_beds_num: int, double_beds_num: int, sofas_num: int, additions: str):
+    """добавляет характеристики номеров"""
+    cursor.execute("""INSERT INTO room_characteristics (room_id, room_type, room_cost, single_beds_num, double_beds_num, sofas_num, additions) VALUES(?, ?, ?, ?, ?, ?, ?)""",
+                   (room_id, room_type, room_cost, single_beds_num, double_beds_num, sofas_num, additions))
+    _commit()
+
+
+def get_room_characteristics(room_id: int):
+    """возвращает характеристики номера по room_id"""
+    cursor.execute("""SELECT room_type, room_cost, single_beds_num, double_beds_num, sofas_num, additions FROM room_characteristics WHERE room_id == ?""",
+                   (room_id, ))
+    return cursor.fetchone()
