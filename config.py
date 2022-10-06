@@ -1,4 +1,4 @@
-token = r'5765828718:AAG3tElzqDgFiObtA5pEZhkQrdtyc83Ffk0'
+TOKEN = r'5765828718:AAG3tElzqDgFiObtA5pEZhkQrdtyc83Ffk0'  # авторизационный токен для взаимодействия с API Telegram
 
 database_path = 'res/DB/database.db'
 
