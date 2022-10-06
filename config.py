@@ -2,6 +2,18 @@ TOKEN = r'5765828718:AAG3tElzqDgFiObtA5pEZhkQrdtyc83Ffk0'  # авторизац�
 
 database_path = 'res/DB/database.db'
 
+HELP_COMMAND = """
+<b>/help</b> - <em>список команд</em>
+<b>/start</b> - <em>начать работу с ботом</em>
+<b>/description</b> - <em>описание возможностей бота</em>
+"""
+
+DESCRIPTION = """
+описание возможностей бота
+ля ля ля
+ля ля
+ля"""
+
 users_columns = 'tg_id INTEGER,' \
                 'surname TEXT,' \
                 'name TEXT,' \
