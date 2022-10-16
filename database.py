@@ -148,3 +148,23 @@ def get_room_characteristics(room_id: int):
     cursor.execute("""SELECT room_type, room_cost, single_beds_num, double_beds_num, sofas_num, additions FROM room_characteristics WHERE room_id == ?""",
                    (room_id, ))
     return cursor.fetchone()
+
+
+def get_all_tasks():
+    cursor.execute("""SELECT developer, task FROM tasks""")
+    return cursor.fetchall()
+
+
+def get_dev_task(developer: str):
+    cursor.execute("""SELECT developer, task FROM tasks WHERE developer == ?""", (developer, ))
+    return cursor.fetchone()
+
+
+def add_dev_task(developer: str, task: str):
+    cursor.execute("""INSERT INTO tasks (developer, task) VALUES(?, ?)""", (developer, task))
+    _commit()
+
+
+def set_dev_task(developer: str, new_task: str):
+    cursor.execute("""UPDATE tasks SET task = ? WHERE developer = ?""", (new_task, developer))
+    _commit()
