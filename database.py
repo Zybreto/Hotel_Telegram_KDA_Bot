@@ -150,21 +150,10 @@ def get_room_characteristics(room_id: int):
     return cursor.fetchone()
 
 
-def get_all_tasks():
-    cursor.execute("""SELECT developer, task FROM tasks""")
-    return cursor.fetchall()
-
-
-def get_dev_task(developer: str):
-    cursor.execute("""SELECT developer, task FROM tasks WHERE developer == ?""", (developer, ))
+def get_hotel_specs(hotel_id: int):
+    cursor.execute("""SELECT address, phone_num, email FROM hotel_specs WHERE hotel_id == ?""", (hotel_id, ))
     return cursor.fetchone()
 
-
-def add_dev_task(developer: str, task: str):
-    cursor.execute("""INSERT INTO tasks (developer, task) VALUES(?, ?)""", (developer, task))
-    _commit()
-
-
-def set_dev_task(developer: str, new_task: str):
-    cursor.execute("""UPDATE tasks SET task = ? WHERE developer = ?""", (new_task, developer))
-    _commit()
+def get_hotels_num():
+    hotels = cursor.execute("""SELECT hotel_id FROM hotel_specs""").fetchall()
+    return len(hotels)
