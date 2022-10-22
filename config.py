@@ -1,10 +1,12 @@
 from aiogram import  Bot, Dispatcher
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 
 TOKEN = r'5765828718:AAG3tElzqDgFiObtA5pEZhkQrdtyc83Ffk0'  # авторизационный токен для взаимодействия с API Telegram
 
+storage = MemoryStorage()  # память для хранения состояний пользователей
 bot = Bot(TOKEN)
-dp = Dispatcher(bot)  # Dispatcher осуществляет анализ и обработку входящих обновлений бота
+dp = Dispatcher(bot, storage=storage)  # Dispatcher осуществляет анализ и обработку входящих обновлений бота
 database_path = 'res/DB/database.db'
 
 HELP_COMMAND = """
