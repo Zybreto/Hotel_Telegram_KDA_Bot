@@ -1,12 +1,9 @@
-from aiogram import Bot, Dispatcher, executor, types
+from aiogram import executor, types
 from aiogram.dispatcher.filters import Text
 from time import time, ctime
 
 from keyboards import *
 from database import *
-
-bot = Bot(TOKEN)
-dp = Dispatcher(bot)  # Dispatcher осуществляет анализ и обработку входящих обновлений бота
 
 
 @dp.message_handler(commands=['start', 'restart'])

@@ -1,5 +1,10 @@
+from aiogram import  Bot, Dispatcher
+
+
 TOKEN = r'5765828718:AAG3tElzqDgFiObtA5pEZhkQrdtyc83Ffk0'  # авторизационный токен для взаимодействия с API Telegram
 
+bot = Bot(TOKEN)
+dp = Dispatcher(bot)  # Dispatcher осуществляет анализ и обработку входящих обновлений бота
 database_path = 'res/DB/database.db'
 
 HELP_COMMAND = """
