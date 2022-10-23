@@ -1,6 +1,7 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
 
 
+
 def get_start_kb():
     kb = ReplyKeyboardMarkup([[KeyboardButton('Бронь номеров'), KeyboardButton('Ресторан')],
                               [KeyboardButton('Об отеле'), KeyboardButton('Контактная информация')]],
@@ -17,7 +18,7 @@ def get_room_category_ikb():
     return ikb
 
 
-def get_people_num_ikb():
+def get_adult_num_ikb():
     ikb = InlineKeyboardMarkup(resize_keyboard=True)
     ikb.add(InlineKeyboardButton('1', callback_data='1'), InlineKeyboardButton('2', callback_data='2'))
     ikb.add(InlineKeyboardButton('3', callback_data='3'), InlineKeyboardButton('4', callback_data='4'))
@@ -32,7 +33,25 @@ def get_children_presense_ikb():
     return ikb
 
 
-def get_choosing_dates_ikb():
+def get_children_num_ikb():
     ikb = InlineKeyboardMarkup(resize_keyboard=True)
-
+    ikb.add(InlineKeyboardButton('1', callback_data='1'), InlineKeyboardButton('2', callback_data='2'))
+    ikb.add(InlineKeyboardButton('3', callback_data='3'))
+    ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
     return ikb
+
+
+def get_children_age_ikb():
+    ikb = InlineKeyboardMarkup(resize_keyboard=True)
+    ikb.add(InlineKeyboardButton('младше 6 лет', callback_data='0'))
+    ikb.add(InlineKeyboardButton('6 - 12 лет', callback_data='1'))
+    ikb.add(InlineKeyboardButton('12 - 18 лет', callback_data='2'))
+    ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
+    return ikb
+
+
+def main_menu_ikb():
+    ikb = InlineKeyboardMarkup(resize_keyboard=True)
+    ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
+    return ikb
+

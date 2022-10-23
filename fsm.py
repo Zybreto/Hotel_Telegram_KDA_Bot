@@ -7,7 +7,12 @@ class BookingRooms(StatesGroup):
     choosing_children_presense = State()  # состояние выбора наличия детей
 
     choosing_children_num = State()  # состояние выбора кол-ва детей
-    inputing_children_age = State()  # состояние выбора возраста детей
 
-    choosing_dates = State()  # состояние выбора даты заселения
+    lack_suitable_rooms = State()  # отсутствие подходящих номеров
+
+    inputing_1_child_age = State()  # состояние выбора возраста 1го ребенка
+    inputing_2_child_age = State()  # состояние выбора возраста 2го ребенка
+    inputing_3_child_age = State()  # состояние выбора возраста 3го ребенка
+
+    choosing_date = State()  # состояние выбора даты заселения
     payment = State()  # состояние оплаты
