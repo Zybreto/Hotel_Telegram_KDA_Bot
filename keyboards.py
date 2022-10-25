@@ -55,3 +55,10 @@ def main_menu_ikb():
     ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
     return ikb
 
+
+def get_info_about_hotel():
+    ikb = InlineKeyboardMarkup(resize_keyboard=True)
+    ikb.add(InlineKeyboardButton('Кинотеатр', callback_data='cinema'))
+    ikb.add(InlineKeyboardButton('Фитнес', callback_data='fitness'))
+    ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
+    return ikb

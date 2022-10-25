@@ -10,7 +10,7 @@ from fsm import BookingRooms
 from tools import *
 
 
-@dp.message_handler(commands=['start'])
+@dp.message_handler(commands=['start', 'restart'])
 async def start_command(message: types.Message):
     global start_msg
     start_msg = await message.answer(text='Добро пожаловать в Hotel_Telegram_KDA_Bot!\n'\
@@ -18,7 +18,8 @@ async def start_command(message: types.Message):
                          reply_markup=get_start_kb())
     await message.delete()
 
-@dp.message_handler(commands=['restart'], state=BookingRooms)
+
+@dp.message_handler(commands=['start', 'restart'], state=BookingRooms)
 async def restart_command(message: types.Message, state: FSMContext):
     await state.reset_state()
     global start_msg
@@ -266,20 +267,49 @@ async def choosing_date(callback: types.CallbackQuery, callback_data: dict, stat
 
 @dp.message_handler(Text(equals='Ресторан'))
 async def restaurant(message: types.Message):
-    await message.answer('ресторан',
-                         reply_markup=ReplyKeyboardRemove())
+    await bot.send_photo(chat_id=message.chat.id, photo=open('res/images/borsalino_4.jpg', 'rb'))
+    await message.answer('Ресторан Borsalino предлагает изысканный современный интерьер, непринужденную атмосферу,'\
+     'внимательное обслуживание и великолепный вид на Исаакиевский собор.',
+                         reply_markup=get_start_kb())
+    await message.delete()
 
 
 @dp.message_handler(Text(equals='Об отеле'))
 async def about_hotel(message: types.Message):
-    await message.answer('об отеле',
-                         reply_markup=ReplyKeyboardRemove())
+    await message.answer('В данном разделе вы можете ознакомиться с дополнительными сервисами, предоставляемые отелем',
+                         reply_markup=get_info_about_hotel())
+
+
+@dp.callback_query_handler()
+async def about_hotel_cinema(callback: types.CallbackQuery):
+    if callback.data == "cinema":
+        await bot.send_photo(chat_id=callback.message.chat.id,
+                             photo=open('res/images/cinema_angleter.jpg', 'rb'),
+                             caption='Кинотеатр в отеле «KDA hotel» - это культурная площадка в самом центре' \
+                                     'Санкт-Петербурга на Исаакиевской площади. Здесь демонстрируется фестивальное и' \
+                                     'авторское кино, проходят трансляции балетных и оперных спектаклей, проводятся ' \
+                                     'премьерные кинопоказы и творческие встречи с режиссерами и актерами.' \
+                                     'Для бронирование мест обратитесь по телефону: +7(812)-996-16-66')
+    elif callback.data == "fitness":
+        await bot.send_photo(chat_id=callback.message.chat.id,
+                             photo=open('res/images/fitness.jpg', 'rb'),
+                             caption='Фитнес-центр предлагает: тренажерный зал,оборудованный высокотехнологичными' \
+                                     'тренажерами TechnoGym,две сауны и бассейн.\n' \
+                                     'Посещение тренажерного зала,бассейна и сауны предоставляется'\
+                                     'бесплатно всем гостям отеля.\n'\
+                                     'Время работы: с 7:00-22:00.\n'\
+                                     'Для бронирование мест обратитесь по телефону: +7(812)-996-16-66')
+    else:
+        callback.data == "main_menu"
+    await start_command(callback.message)
 
 
 @dp.message_handler(Text(equals='Контактная информация'))
 async def contact_inf(message: types.Message):
-    await message.answer('контакты',
-                         reply_markup=ReplyKeyboardRemove())
+    await message.answer('Отель «KDA Hotel»\nИсаакиевская пл.\nУл. Малая Морская 24\nСанкт-Петербург\n'\
+    '190000 Россия\nTel. +7(812)-996-16-66\nKDA_Hotel.spb@mail.ru',
+                         reply_markup=get_start_kb())
+    await message.delete()
 
 
 if __name__ == '__main__':
