@@ -1,5 +1,5 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
-
+from database import get_room_name
 
 
 def get_start_kb():
@@ -13,7 +13,7 @@ def get_start_kb():
 def get_room_category_ikb():
     ikb = InlineKeyboardMarkup(resize_keyboard=True)
     ikb.add(InlineKeyboardButton('Standard', callback_data='standard'), InlineKeyboardButton('Studio', callback_data='studio'))
-    ikb.add(InlineKeyboardButton('Suite', callback_data='suite'), InlineKeyboardButton('Delux', callback_data='delux'))
+    ikb.add(InlineKeyboardButton('Suite', callback_data='suite'), InlineKeyboardButton('Delux', callback_data='deluxe'))
     ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
     return ikb
 
@@ -50,8 +50,33 @@ def get_children_age_ikb():
     return ikb
 
 
-def main_menu_ikb():
+def get_main_menu_ikb():
     ikb = InlineKeyboardMarkup(resize_keyboard=True)
+    ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
+    return ikb
+
+
+def get_choosing_date_ikb():
+    ikb = InlineKeyboardMarkup(resize_keyboard=True)
+    ikb.add(InlineKeyboardButton('Верно', callback_data='yes'), InlineKeyboardButton('Исправить', callback_data='no'))
+    ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
+    return ikb
+
+
+def get_choosing_room_ikb(rooms_id: list):
+    ikb = InlineKeyboardMarkup(resize_keyboard=True)
+    if len(rooms_id) >= 2 and len(rooms_id) % 2 == 0:
+        for i in range(0, len(rooms_id)-1, 2):
+            ikb.add(InlineKeyboardButton(f'{get_room_name(rooms_id[i])}', callback_data=rooms_id[i]),
+                    InlineKeyboardButton(f'{get_room_name(rooms_id[i+1])}', callback_data=rooms_id[i+1]))
+    elif len(rooms_id) > 2 and len(rooms_id) % 2 != 0:
+        for i in range(0, len(rooms_id)-2, 2):
+            ikb.add(InlineKeyboardButton(f'{get_room_name(rooms_id[i])}', callback_data=rooms_id[i]),
+                    InlineKeyboardButton(f'{get_room_name(rooms_id[i+1])}', callback_data=rooms_id[i+1]))
+        ikb.add(InlineKeyboardButton(f'{get_room_name(rooms_id[len(rooms_id)-1])}', callback_data=rooms_id[len(rooms_id)-1]))
+    elif len(rooms_id) == 1:
+        ikb.add(InlineKeyboardButton(f'{get_room_name(rooms_id[0])}', callback_data=rooms_id[0]))
+
     ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
     return ikb
 

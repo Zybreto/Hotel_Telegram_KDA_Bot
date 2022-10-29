@@ -118,36 +118,52 @@ def del_bank_card(card_name):
 # работа с room_condition
 def add_occupied_room(room_id: int, day: int, month: int, year: int):
     """добавляет данные по состоянию номера"""
-    cursor.execute("""INSERT INTO occupied_room (room_id, day, month, year) VALUES(?, ?, ?, ?)""",
+    cursor.execute("""INSERT INTO occupied_rooms (room_id, day, month, year) VALUES(?, ?, ?, ?)""",
                    (room_id, day, month, year))
     _commit()
 
 
 def get_all_occupied_room():
     """возвращает данные по состоянию всех номеров"""
-    cursor.execute("""SELECT * FROM occupied_room""")
+    cursor.execute("""SELECT * FROM occupied_rooms""")
     return cursor.fetchall()
 
 
-def get_occupied_room(room_id: int):
-    cursor.execute("""SELECT day, month, year FROM occupied_room WHERE room_id == ?""",
+def get_occupied_rooms(room_id):
+    cursor.execute("""SELECT * FROM occupied_rooms WHERE room_id == ?""",
                    (room_id, ))
     return cursor.fetchall()
 
 
 # работа с room_characteristics
-def add_room_characteristics(room_id: int, room_type: str, room_cost: int, single_beds_num: int, double_beds_num: int, sofas_num: int, additions: str):
+def add_room_characteristics(room_id: int, room_name: str, room_type: str, capacity: int, room_cost: int, single_beds_num: int, double_beds_num: int, sofas_num: int, additions: str):
     """добавляет характеристики номеров"""
-    cursor.execute("""INSERT INTO room_characteristics (room_id, room_type, room_cost, single_beds_num, double_beds_num, sofas_num, additions) VALUES(?, ?, ?, ?, ?, ?, ?)""",
-                   (room_id, room_type, room_cost, single_beds_num, double_beds_num, sofas_num, additions))
+    cursor.execute("""INSERT INTO room_characteristics (room_id, room_name, room_type, capacity, room_cost, single_beds_num, double_beds_num, sofas_num, additions) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   (room_id, room_name, room_type, capacity, room_cost, single_beds_num, double_beds_num, sofas_num, additions))
     _commit()
 
 
 def get_room_characteristics(room_id: int):
     """возвращает характеристики номера по room_id"""
-    cursor.execute("""SELECT room_type, room_cost, single_beds_num, double_beds_num, sofas_num, additions FROM room_characteristics WHERE room_id == ?""",
+    cursor.execute("""SELECT * FROM room_characteristics WHERE room_id == ?""",
                    (room_id, ))
     return cursor.fetchone()
+
+
+def get_room_name(room_id):
+    cursor.execute("""SELECT room_name FROM room_characteristics WHERE room_id == ?""",
+                   (room_id,))
+    return cursor.fetchone()[0]
+
+def get_rooms_id():
+    cursor.execute("""SELECT room_id FROM room_characteristics""")
+    return cursor.fetchall()
+
+
+def get_rooms_id_by_type(room_type: str):
+    cursor.execute("""SELECT room_id FROM room_characteristics WHERE room_type == ?""",
+                   (room_type, ))
+    return cursor.fetchall()
 
 
 def get_hotel_specs(hotel_id: int):
