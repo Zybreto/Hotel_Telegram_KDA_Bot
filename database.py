@@ -21,11 +21,11 @@ ________________________________________________________________________________
 -----------------------------------------------------------------------------------------------------------
 
 
-room_condition table:
+occupied_rooms table:
 ____________________________________________________________
-| room_id | occupancy_status | entry_date | departure_date |
+| room_id |        day       |    month   |      year      |
 |---------|------------------|------------|----------------|
-|   123   |         1        | 12.01.2022 |   15.01.2022   |
+|   123   |         1        |      12    |      2022      |
 |   ...   |        ...       |     ...    |      ...       |
 ------------------------------------------------------------
 
@@ -116,21 +116,21 @@ def del_bank_card(card_name):
 
 
 # работа с room_condition
-def add_room_condition(room_id: int, occupancy_status: int, entry_date: int, departure_date: int):
+def add_occupied_room(room_id: int, day: int, month: int, year: int):
     """добавляет данные по состоянию номера"""
-    cursor.execute("""INSERT INTO room_condition (room_id, occupancy_status, entry_date, departure_date) VALUES(?, ?, ?, ?, ?, ?)""",
-                   (room_id, occupancy_status, entry_date, departure_date))
+    cursor.execute("""INSERT INTO occupied_room (room_id, day, month, year) VALUES(?, ?, ?, ?)""",
+                   (room_id, day, month, year))
     _commit()
 
 
-def get_all_room_condition():
+def get_all_occupied_room():
     """возвращает данные по состоянию всех номеров"""
-    cursor.execute("""SELECT room_id, occupancy_status, entry_date, departure_date FROM room_condition""")
+    cursor.execute("""SELECT * FROM occupied_room""")
     return cursor.fetchall()
 
 
-def get_room_condition(room_id: int):
-    cursor.execute("""SELECT occupancy_status, entry_date, departure_date FROM room_condition WHERE room_id == ?""",
+def get_occupied_room(room_id: int):
+    cursor.execute("""SELECT day, month, year FROM occupied_room WHERE room_id == ?""",
                    (room_id, ))
     return cursor.fetchall()
 
@@ -153,6 +153,7 @@ def get_room_characteristics(room_id: int):
 def get_hotel_specs(hotel_id: int):
     cursor.execute("""SELECT address, phone_num, email FROM hotel_specs WHERE hotel_id == ?""", (hotel_id, ))
     return cursor.fetchone()
+
 
 def get_hotels_num():
     hotels = cursor.execute("""SELECT hotel_id FROM hotel_specs""").fetchall()
