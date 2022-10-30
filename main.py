@@ -316,6 +316,8 @@ async def check_room(callback: types.CallbackQuery, state:FSMContext):
                                      photo=open('res/images/hotel_plan.png', 'rb'),
                                      caption='Выберите номер:',
                                      reply_markup=get_choosing_room_ikb(data['free_rooms_id_by_type']))
+                await BookingRooms.next()
+                await callback.message.delete()
             else:
                 await BookingRooms.choosing_date.set()
                 await callback.answer('Нет свободных номеров')
@@ -327,7 +329,6 @@ async def check_room(callback: types.CallbackQuery, state:FSMContext):
         await callback.answer('Выберите другую дату')
         await callback.message.edit_text('Выберите другую дату:',
                                          reply_markup=await SimpleCalendar().start_calendar())
-    await callback.message.delete()
 
 
 @dp.callback_query_handler(state=BookingRooms.choosing_room)
@@ -336,6 +337,11 @@ async def choose_room(callback: types.CallbackQuery, state: FSMContext):
         await callback.answer('Возвращаемся в главное меню')
         await state.finish()
         await start_command(callback.message)
+    else:
+        await callback.message.delete()
+        await bot.send_message(chat_id=callback.message.chat.id,
+                               text='vse',
+                               reply_markup=get_main_menu_ikb())
 
 
 
