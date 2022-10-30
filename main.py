@@ -20,7 +20,6 @@ async def start_command(message: types.Message):
         await message.delete()
     except:
         pass
-    await message.delete()
 
 
 @dp.message_handler(commands=['start', 'restart'], state=BookingRooms)
@@ -34,7 +33,6 @@ async def restart_command(message: types.Message, state: FSMContext):
         await message.delete()
     except:
         pass
-    await message.delete()
 
 
 @dp.message_handler(commands=['help'])
@@ -113,9 +111,9 @@ async def choosing_adults_num(callback: types.CallbackQuery, state: FSMContext):
                     data['adults_num'] = 4
                     await callback.answer('4 взрослых')
 
-    await callback.message.edit_text('С вами будут дети (младше 18 лет)?',
-                                     reply_markup=get_children_presense_ikb())
-    await BookingRooms.next()
+        await callback.message.edit_text('С вами будут дети (младше 18 лет)?',
+                                         reply_markup=get_children_presense_ikb())
+        await BookingRooms.next()
 
 
 @dp.callback_query_handler(state=BookingRooms.choosing_children_presense)
@@ -128,6 +126,7 @@ async def choosing_children_presense(callback: types.CallbackQuery, state: FSMCo
         async with state.proxy() as data:
             match callback.data:
                 case 'да':
+                    data['children_num'] = 0
                     data['children_presense'] = 'да'
                     await callback.answer('С детьми')
                     await callback.message.edit_text('Выберите количество детей:',
@@ -135,10 +134,11 @@ async def choosing_children_presense(callback: types.CallbackQuery, state: FSMCo
                     await BookingRooms.next()
                 case 'нет':
                     data['children_presense'] = 'нет'
+                    data['children_num'] = 0
                     await callback.answer('Без детей')
-                    await callback.message.edit_text('Выберите дату:',
-                                                     reply_markup=await SimpleCalendar().start_calendar())
-                    await BookingRooms.choosing_date.set()
+                    await callback.message.edit_text('Проверка вместимости',
+                                                     reply_markup=get_check_capacity_ikb())
+                    await BookingRooms.checking_capacity.set()
 
 
 @dp.callback_query_handler(state=BookingRooms.choosing_children_num)
@@ -160,22 +160,9 @@ async def choosing_children_num(callback: types.CallbackQuery, state: FSMContext
                     data['children_num'] = 3
                     await callback.answer('3 ребенка')
 
-            if check_capacity(data['adults_num'], data['children_num']):
-                await callback.message.edit_text('Выберите возраст 1-го ребенка:\n',
-                                                 reply_markup=get_children_age_ikb())
-                await BookingRooms.inputing_1_child_age.set()
-            else:
-                await callback.message.edit_text('К сожалению нет номеров с подходящей вместительностью',
-                                                 reply_markup=main_menu_ikb())
-                await BookingRooms.lack_suitable_rooms.set()
-
-
-@dp.callback_query_handler(state=BookingRooms.lack_suitable_rooms)
-async def lack_suitable_rooms(callback: types.CallbackQuery, state: FSMContext):
-    if callback.data == 'main_menu':
-        await callback.answer('Возвращаемся в главное меню')
-        await state.finish()
-        await start_command(callback.message)
+            await callback.message.edit_text('Выберите возраст 1-го ребенка:\n',
+                                             reply_markup=get_children_age_ikb())
+            await BookingRooms.inputing_1_child_age.set()
 
 
 @dp.callback_query_handler(state=BookingRooms.inputing_1_child_age)
@@ -200,9 +187,9 @@ async def choosing_1_child_age(callback: types.CallbackQuery, state: FSMContext)
                                              reply_markup=get_children_age_ikb())
             await BookingRooms.next()
         else:
-            await callback.message.edit_text('Выберите дату:',
-                                             reply_markup=await SimpleCalendar().start_calendar())
-            await BookingRooms.choosing_date.set()
+            await callback.message.edit_text('Проверка вместимости',
+                                             reply_markup=get_check_capacity_ikb())
+            await BookingRooms.checking_capacity.set()
 
 
 @dp.callback_query_handler(state=BookingRooms.inputing_2_child_age)
@@ -227,9 +214,9 @@ async def choosing_2_child_age(callback: types.CallbackQuery, state: FSMContext)
                                              reply_markup=get_children_age_ikb())
             await BookingRooms.next()
         else:
-            await callback.message.edit_text('Выберите дату:',
-                                             reply_markup=await SimpleCalendar().start_calendar())
-            await BookingRooms.choosing_date.set()
+            await callback.message.edit_text('Проверка вместимости',
+                                             reply_markup=get_check_capacity_ikb())
+            await BookingRooms.checking_capacity.set()
 
 
 @dp.callback_query_handler(state=BookingRooms.inputing_3_child_age)
@@ -249,10 +236,42 @@ async def choosing_3_child_age(callback: types.CallbackQuery, state: FSMContext)
                     data[f'3_child'] = 2
 
         await callback.answer('Возраст 3-го ребенка введен')
-        await callback.message.edit_text('Выберите дату:',
-                                         reply_markup=await SimpleCalendar().start_calendar())
+        await callback.message.edit_text('Проверка вместимости',
+                                         reply_markup=get_check_capacity_ikb())
         await BookingRooms.next()
-    callback.message.delete()
+
+
+@dp.callback_query_handler(state=BookingRooms.checking_capacity)
+async def check_room_capacity(callback: types.CallbackQuery, state: FSMContext):
+    if callback.data == 'main_menu':
+        await callback.answer('Возвращаемся в главное меню')
+        await state.finish()
+        await start_command(callback.message)
+    else:
+        async with state.proxy() as data:
+            count = 0
+            async with state.proxy() as data:
+                for child in range(data['children_num']):
+                    if data[f'{child + 1}_child'] != 0:
+                        count += 1
+                data['total_people'] = data['adults_num'] + count
+
+            if check_capacity(data['room_type'], data['total_people']):
+                await callback.message.edit_text('Выберите дату:',
+                                                 reply_markup=await SimpleCalendar().start_calendar())
+                await BookingRooms.choosing_date.set()
+            else:
+                await callback.message.edit_text('К сожалению нет номеров с подходящей вместительностью',
+                                                 reply_markup=get_main_menu_ikb())
+                await BookingRooms.lack_suitable_rooms.set()
+
+
+@dp.callback_query_handler(state=BookingRooms.lack_suitable_rooms)
+async def lack_suitable_rooms(callback: types.CallbackQuery, state: FSMContext):
+    if callback.data == 'main_menu':
+        await callback.answer('Возвращаемся в главное меню')
+        await state.finish()
+        await start_command(callback.message)
 
 
 @dp.callback_query_handler(simple_cal_callback.filter(), state=BookingRooms.choosing_date)
@@ -287,8 +306,7 @@ async def check_room(callback: types.CallbackQuery, state:FSMContext):
 
             for room in get_all_occupied_room():
                 if room[1] == data['day'] and room[2] == data['month'] and room[3] == data['year']:
-                    data['all_occupied_rooms_id_in_date'].append(int(room[0]))
-                    print(room)
+                    data['all_occupied_rooms_id_in_date'].append(room[0])
 
             data['free_rooms_id_by_type'] = get_free_rooms(data['all_occupied_rooms_id_in_date'], data['room_type'])
 
@@ -309,6 +327,7 @@ async def check_room(callback: types.CallbackQuery, state:FSMContext):
         await callback.answer('Выберите другую дату')
         await callback.message.edit_text('Выберите другую дату:',
                                          reply_markup=await SimpleCalendar().start_calendar())
+    await callback.message.delete()
 
 
 @dp.callback_query_handler(state=BookingRooms.choosing_room)

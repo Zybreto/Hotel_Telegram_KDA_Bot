@@ -155,6 +155,7 @@ def get_room_name(room_id):
                    (room_id,))
     return cursor.fetchone()[0]
 
+
 def get_rooms_id():
     cursor.execute("""SELECT room_id FROM room_characteristics""")
     return cursor.fetchall()
@@ -163,6 +164,12 @@ def get_rooms_id():
 def get_rooms_id_by_type(room_type: str):
     cursor.execute("""SELECT room_id FROM room_characteristics WHERE room_type == ?""",
                    (room_type, ))
+    return cursor.fetchall()
+
+
+def get_room_id_by_capacity(room_type: str, capacity: int):
+    cursor.execute("""SELECT room_id FROM room_characteristics WHERE room_type == ? AND capacity >= ?""",
+                   (room_type, capacity))
     return cursor.fetchall()
 
 
