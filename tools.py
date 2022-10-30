@@ -12,7 +12,6 @@ def get_free_rooms(occupied_rooms_id: list, room_type: str):
 
 def check_capacity(room_type: str, total_people: int):
     rooms = get_room_id_by_capacity(room_type, total_people)
-    print(rooms)
 
     if len(rooms):
         return True
