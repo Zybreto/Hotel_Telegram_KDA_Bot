@@ -52,7 +52,9 @@ def get_children_age_ikb():
 
 def get_check_capacity_ikb():
     ikb = InlineKeyboardMarkup(resize_keyboard=True)
-    ikb.add(InlineKeyboardButton('Проверка вместимости', callback_data='check'))
+    ikb.add(InlineKeyboardButton('Проверить на вместимость\n' \
+                                 '*тык*',
+                                 callback_data='check'))
     ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
     return ikb
 
