@@ -16,6 +16,10 @@ async def start_command(message: types.Message):
     start_msg = await message.answer(text='Добро пожаловать в Hotel_Telegram_KDA_Bot!\n' \
                                           'Для продолжения выберите одну из опций на клавиатуре:',
                                      reply_markup=get_start_kb())
+    try:
+        await message.delete()
+    except:
+        pass
     await message.delete()
 
 
@@ -26,6 +30,10 @@ async def restart_command(message: types.Message, state: FSMContext):
     start_msg = await message.answer(text='Регистрация в Hotel_Telegram_KDA_Bot прервана!\n' \
                                           'Для продолжения выберите одну из опций на клавиатуре:',
                                      reply_markup=get_start_kb())
+    try:
+        await message.delete()
+    except:
+        pass
     await message.delete()
 
 
@@ -46,12 +54,14 @@ async def booking_rooms(message: types.Message):
         await start_msg.delete()
     except:
         pass
-
     await bot.send_message(chat_id=message.chat.id,
                            text='Выберите категорию номера:',
                            reply_markup=get_room_category_ikb())
     await BookingRooms.choosing_room_category.set()
-    await message.delete()
+    try:
+        await message.delete()
+    except:
+        pass
 
 
 @dp.callback_query_handler(state=BookingRooms.choosing_room_category)
