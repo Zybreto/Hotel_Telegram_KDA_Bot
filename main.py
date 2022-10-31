@@ -149,16 +149,9 @@ async def choosing_children_num(callback: types.CallbackQuery, state: FSMContext
         await start_command(callback.message)
     else:
         async with state.proxy() as data:
-            match callback.data:
-                case '1':
-                    data['children_num'] = 1
-                    await callback.answer('1 ребенок')
-                case '2':
-                    data['children_num'] = 2
-                    await callback.answer('2 ребенка')
-                case '3':
-                    data['children_num'] = 3
-                    await callback.answer('3 ребенка')
+            if callback.data in ('1', '2', '3'):
+                data['children_num'] = int(callback.data)
+                await callback.answer(f'{data["children_num"]} ребенок')
 
             await callback.message.edit_text('Выберите возраст 1-го ребенка:\n',
                                              reply_markup=get_children_age_ikb())
@@ -173,13 +166,8 @@ async def choosing_1_child_age(callback: types.CallbackQuery, state: FSMContext)
         await start_command(callback.message)
     else:
         async with state.proxy() as data:
-            match callback.data:
-                case '0':
-                    data[f'1_child'] = 0
-                case '1':
-                    data[f'1_child'] = 1
-                case '2':
-                    data[f'1_child'] = 2
+            if callback.data in ('0', '1', '2'):
+                data[f'1_child'] = int(callback.data)
 
         await callback.answer('возраст 1-го ребенка введен')
         if data['children_num'] > 1:
@@ -200,13 +188,8 @@ async def choosing_2_child_age(callback: types.CallbackQuery, state: FSMContext)
         await start_command(callback.message)
     else:
         async with state.proxy() as data:
-            match callback.data:
-                case '0':
-                    data[f'2_child'] = 0
-                case '1':
-                    data[f'2_child'] = 1
-                case '2':
-                    data[f'2_child'] = 2
+            if callback.data in ('0', '1', '2'):
+                data[f'2_child'] = int(callback.data)
 
         await callback.answer('возраст 2-го ребенка введен')
         if data['children_num'] > 2:
@@ -227,13 +210,8 @@ async def choosing_3_child_age(callback: types.CallbackQuery, state: FSMContext)
         await start_command(callback.message)
     else:
         async with state.proxy() as data:
-            match callback.data:
-                case '0':
-                    data[f'3_child'] = 0
-                case '1':
-                    data[f'3_child'] = 1
-                case '2':
-                    data[f'3_child'] = 2
+            if callback.data in ('0', '1', '2'):
+                data[f'3_child'] = int(callback.data)
 
         await callback.answer('Возраст 3-го ребенка введен')
         await callback.message.edit_text('Чтобы проверить на вместимость, нажмите на кнопку',
@@ -342,17 +320,6 @@ async def choose_room(callback: types.CallbackQuery, state: FSMContext):
         await bot.send_message(chat_id=callback.message.chat.id,
                                text='vse',
                                reply_markup=get_main_menu_ikb())
-
-
-
-
-
-
-
-
-
-
-
 
 
 @dp.message_handler(Text(equals='Ресторан'))
