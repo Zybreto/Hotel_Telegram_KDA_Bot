@@ -3,7 +3,7 @@ from database import get_room_name
 
 
 def get_start_kb():
-    kb = ReplyKeyboardMarkup([[KeyboardButton('Бронь номеров'), KeyboardButton('Ресторан')],
+    kb = ReplyKeyboardMarkup([[KeyboardButton('Бронь номеров'), KeyboardButton('Дополнительные услуги')],
                               [KeyboardButton('Об отеле'), KeyboardButton('Контактная информация')]],
                              resize_keyboard=True,
                              one_time_keyboard=True)
@@ -90,9 +90,10 @@ def get_choosing_room_ikb(rooms_id: list):
     return ikb
 
 
-def get_info_about_hotel():
+def get_additional_services():
     ikb = InlineKeyboardMarkup(resize_keyboard=True)
     ikb.add(InlineKeyboardButton('Кинотеатр', callback_data='cinema'))
     ikb.add(InlineKeyboardButton('Фитнес', callback_data='fitness'))
+    ikb.add(InlineKeyboardButton('Ресторан', callback_data='restaurant'))
     ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
     return ikb

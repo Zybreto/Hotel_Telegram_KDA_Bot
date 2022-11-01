@@ -344,34 +344,35 @@ async def choose_room(callback: types.CallbackQuery, state: FSMContext):
                                reply_markup=get_main_menu_ikb())
 
 
-
-
-
-
-
-
-
-
-
-
-
-@dp.message_handler(Text(equals='Ресторан'))
-async def restaurant(message: types.Message):
-    await bot.send_photo(chat_id=message.chat.id, photo=open('res/images/borsalino_4.jpg', 'rb'))
-    await message.answer('Ресторан Borsalino предлагает изысканный современный интерьер, непринужденную атмосферу,' \
-                         'внимательное обслуживание и великолепный вид на Исаакиевский собор.',
-                         reply_markup=get_start_kb())
+@dp.message_handler(Text(equals='Об отеле'))
+async def about_hotel(message: types.Message):
+    media = types.MediaGroup()
+    media.attach_photo(types.InputFile('res/images/galery_2.jpeg'), 'Фасад здания отеля')
+    media.attach_photo(types.InputFile('res/images/galery_4.jpeg'), 'Бассейн в фитнес зале')
+    media.attach_photo(types.InputFile('res/images/galery_5.jpeg'), 'Кинотеатр')
+    media.attach_photo(types.InputFile('res/images/galery_6.jpeg'), 'Холл')
+    media.attach_photo(types.InputFile('res/images/galery_7.jpeg'), 'Вход в отель')
+    media.attach_photo(types.InputFile('res/images/galery_8.jpeg'), 'Номер Standart')
+    media.attach_photo(types.InputFile('res/images/galery_10.jpeg'), 'Номер Standart')
+    media.attach_photo(types.InputFile('res/images/galery_12.jpeg'), 'Холл')
+    media.attach_photo(types.InputFile('res/images/galery_13.jpeg'), 'Ресторан Borsalino')
+    media.attach_photo(types.InputFile('res/images/galery_14.jpeg'), 'Холл')
+    await bot.send_media_group(message.chat.id, media=media)
+    await bot.send_message(message.chat.id, 'История «KDA-Hotel» насчитывает уже более полутора столетий. Находясь в самом сердце Санкт-Петербурга, отель был и остаётся свидетелем и участником исторических событий не только города, но и страны.'
+                            '\n''Гостиница была основана на этом месте в 1840 году Наполеоном Бокиным и была известна под именем «Наполеон». Это было трехэтажное здание. В 1845-1846 архитектор Адриан Робен (1804-1872) реконструировал здание, которое стало четырехэтажным «Домом Поггенпола» с арендой квартир. В 1876 дом опять перестроили, и открылся отель «Шмидт-Англия», принадлежащий Терезе Шмидт (1800-1883) В 1911 и 1912 он был перестроен еще два раза. В 1911 году название отеля официально потеряло приставку «Шмидт» и в официальных документах значился как «владение наследников семьи Медем, хотя все еще принадлежал семье Шмидт. С 1911 по 1914 год отелем владела семья Шотте, благодаря которым, до наших дней дошли фотографии и документы тех лет. К 1917 году в отеле насчитывалось 75 номеров, и в городском путеводителе он значился как один из самых роскошных.',
+                             reply_markup=get_main_menu_ikb())
     await message.delete()
 
 
-@dp.message_handler(Text(equals='Об отеле'))
-async def about_hotel(message: types.Message):
+@dp.message_handler(Text(equals='Дополнительные услуги'))
+async def additional_services(message: types.Message):
     await message.answer('В данном разделе вы можете ознакомиться с дополнительными сервисами, предоставляемые отелем',
-                         reply_markup=get_info_about_hotel())
+                         reply_markup=get_additional_services())
+    await message.delete()
 
 
 @dp.callback_query_handler()
-async def about_hotel_cinema(callback: types.CallbackQuery):
+async def additional_services(callback: types.CallbackQuery):
     if callback.data == "cinema":
         await bot.send_photo(chat_id=callback.message.chat.id,
                              photo=open('res/images/cinema_angleter.jpg', 'rb'),
@@ -379,7 +380,8 @@ async def about_hotel_cinema(callback: types.CallbackQuery):
                                      'Санкт-Петербурга на Исаакиевской площади. Здесь демонстрируется фестивальное и' \
                                      'авторское кино, проходят трансляции балетных и оперных спектаклей, проводятся ' \
                                      'премьерные кинопоказы и творческие встречи с режиссерами и актерами.' \
-                                     'Для бронирование мест обратитесь по телефону: +7(812)-996-16-66')
+                                     'Для бронирование мест обратитесь по телефону: +7(812)-996-16-66',
+                             reply_markup=get_main_menu_ikb())
     elif callback.data == "fitness":
         await bot.send_photo(chat_id=callback.message.chat.id,
                              photo=open('res/images/fitness.jpg', 'rb'),
@@ -388,7 +390,14 @@ async def about_hotel_cinema(callback: types.CallbackQuery):
                                      'Посещение тренажерного зала,бассейна и сауны предоставляется' \
                                      'бесплатно всем гостям отеля.\n' \
                                      'Время работы: с 7:00-22:00.\n' \
-                                     'Для бронирование мест обратитесь по телефону: +7(812)-996-16-66')
+                                     'Для бронирование мест обратитесь по телефону: +7(812)-996-16-66',
+                             reply_markup=get_main_menu_ikb())
+    elif callback.data == "restaurant":
+        await bot.send_photo(chat_id=callback.message.chat.id,
+                             photo=open('res/images/borsalino_4.jpg', 'rb'),
+                             caption='Ресторан Borsalino предлагает изысканный современный интерьер, непринужденную атмосферу,' \
+                                     'внимательное обслуживание и великолепный вид на Исаакиевский собор.',
+                             reply_markup=get_main_menu_ikb())
     elif callback.data == "main_menu":
         await start_command(callback.message)
 
@@ -397,7 +406,7 @@ async def about_hotel_cinema(callback: types.CallbackQuery):
 async def contact_inf(message: types.Message):
     await message.answer('Отель «KDA Hotel»\nИсаакиевская пл.\nУл. Малая Морская 24\nСанкт-Петербург\n' \
                          '190000 Россия\nTel. +7(812)-996-16-66\nKDA_Hotel.spb@mail.ru',
-                         reply_markup=get_start_kb())
+                         reply_markup=get_main_menu_ikb())
     await message.delete()
 
 
