@@ -1,3 +1,5 @@
+import datetime
+
 from aiogram import executor, types
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher import FSMContext
@@ -302,33 +304,38 @@ async def check_room(callback: types.CallbackQuery, state:FSMContext):
         await start_command(callback.message)
     elif callback.data == 'yes':
         async with state.proxy() as data:
-            data['all_occupied_rooms_id_in_date'] = []
+            if data['year'] >= int(datetime.datetime.now().year) \
+                    and data['month'] >= int(datetime.datetime.now().month) \
+                    and data['day'] >= int(datetime.datetime.now().day):
+                data['all_occupied_rooms_id_in_date'] = []
 
-            for room in get_all_occupied_room():
-                if room[1] == data['day'] and room[2] == data['month'] and room[3] == data['year']:
-                    data['all_occupied_rooms_id_in_date'].append(room[0])
+                for room in get_all_occupied_room():
+                    if room[1] == data['day'] and room[2] == data['month'] and room[3] == data['year']:
+                        data['all_occupied_rooms_id_in_date'].append(room[0])
 
-            data['free_rooms_id_by_type'] = get_free_rooms(data['all_occupied_rooms_id_in_date'], data['room_type'])
+                data['free_rooms_id_by_type'] = get_free_rooms(data['all_occupied_rooms_id_in_date'], data['room_type'])
 
-            if len(data['free_rooms_id_by_type']):
-                await callback.answer('Переходим к выбору номера')
-                await bot.send_photo(chat_id=callback.message.chat.id,
-                                     photo=open('res/images/hotel_plan.png', 'rb'),
-                                     caption='Выберите номер:',
-                                     reply_markup=get_choosing_room_ikb(data['free_rooms_id_by_type']))
-                await BookingRooms.next()
-                await callback.message.delete()
-            else:
-                await BookingRooms.choosing_date.set()
-                await callback.answer('Нет свободных номеров')
-                await callback.message.edit_text('К сожалению, в выбранную дату нет свободных номеров\n' \
-                                                 'Выберите другую дату:',
-                                                 reply_markup=await SimpleCalendar().start_calendar())
-    elif callback.data == 'no':
-        await BookingRooms.choosing_date.set()
-        await callback.answer('Выберите другую дату')
-        await callback.message.edit_text('Выберите другую дату:',
-                                         reply_markup=await SimpleCalendar().start_calendar())
+                if len(data['free_rooms_id_by_type']):
+                    await callback.answer('Переходим к выбору номера')
+                    await bot.send_photo(chat_id=callback.message.chat.id,
+                                         photo=open('res/images/hotel_plan.png', 'rb'),
+                                         caption='Выберите номер:',
+                                         reply_markup=get_choosing_room_ikb(data['free_rooms_id_by_type']))
+                    await BookingRooms.next()
+                    await callback.message.delete()
+                else:
+                    await BookingRooms.choosing_date.set()
+                    await callback.answer('Нет свободных номеров')
+                    await callback.message.edit_text('К сожалению, в выбранную дату нет свободных номеров\n' \
+                                                     'Выберите другую дату:',
+                                                     reply_markup=await SimpleCalendar().start_calendar())
+                return
+
+    # if callback.data == 'no' or old date
+    await BookingRooms.choosing_date.set()
+    await callback.answer('Выберите другую дату')
+    await callback.message.edit_text('Выберите другую дату:',
+                                     reply_markup=await SimpleCalendar().start_calendar())
 
 
 @dp.callback_query_handler(state=BookingRooms.choosing_room)
