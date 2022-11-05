@@ -5,16 +5,16 @@ from config import *
 """
 users table:
 ___________________________________________________________________
-|   tg_id   |      surname    |     name     |     patronymic     |
+|   tg_id   |      surname    |     name     |        email       |
 |-----------|-----------------|--------------|--------------------|
-| 123456789 | example_surname | example_name | example_patronymic |
+| 123456789 | example_surname | example_name |    example_email   |
 |   ....    |       ...       |      ...     |        ...         |
 -------------------------------------------------------------------
 
 
 bank_cards table:
 ___________________________________________________________________________________________________________
-|   tg_id   |  card_name   |    card_number   |  holders_name  |   validity_month   | validity_year | cvv |
+|   tg_id   |  card_holders_name   |    card_number   |  holders_name  |   validity_month   | validity_year | cvv |
 |-----------|--------------|------------------|----------------|--------------------|---------------------|
 | 123456789 | example_name | 1234123412341234 | example_h_name |   example_month    | example_year  | 123 |
 |    ...    |     ...      |       ...        |      ...       |        ...         |      ...      | ... |
@@ -91,6 +91,10 @@ def del_user(tg_id: int):
     _commit()
 
 
+def user_in_db(tg_id: int):
+    return 1 if (tg_id,) in _get_all_tg_id() else 0
+
+
 # работа с таблицей bank_cards
 def add_bank_card(tg_id: int, card_number: int, holders_name: str, validity_month: int, validity_year: int, cvv: int):
     """производит проверку на наличие card_number, в случае его отсутствия создает карту с таким card_number,
@@ -104,14 +108,14 @@ def add_bank_card(tg_id: int, card_number: int, holders_name: str, validity_mont
 
 
 def get_user_cards(tg_id):
-    """возвращает кортежи вида (card_name, card_number) по tg_id"""
-    cursor.execute("""SELECT card_name, card_number FROM bank_cards WHERE tg_id == ?""", (tg_id, ))
+    """возвращает кортежи вида (card_holders_name, card_number) по tg_id"""
+    cursor.execute("""SELECT card_holders_name, card_number FROM bank_cards WHERE tg_id == ?""", (tg_id, ))
     return cursor.fetchall()
 
 
 def del_bank_card(card_name):
-    """удаляет данные карты по card_name"""
-    cursor.execute("""DELETE FROM bank_cards WHERE card_name == ?""", (card_name, ))
+    """удаляет данные карты по card_holders_name"""
+    cursor.execute("""DELETE FROM bank_cards WHERE card_holders_name == ?""", (card_name, ))
     _commit()
 
 
@@ -171,6 +175,12 @@ def get_room_id_by_capacity(room_type: str, capacity: int):
     cursor.execute("""SELECT room_id FROM room_characteristics WHERE room_type == ? AND capacity >= ?""",
                    (room_type, capacity))
     return cursor.fetchall()
+
+
+def get_room_cost_by_id(room_id: int):
+    cursor.execute("""SELECT room_cost FROM room_characteristics WHERE room_id == ?""",
+                   (room_id, ))
+    return cursor.fetchone()
 
 
 def get_hotel_specs(hotel_id: int):

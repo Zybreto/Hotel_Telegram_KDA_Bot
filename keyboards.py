@@ -90,6 +90,30 @@ def get_choosing_room_ikb(rooms_id: list):
     return ikb
 
 
+def get_confirm_room_selection_ikb():
+    ikb = InlineKeyboardMarkup(resize_keyboard=True)
+    ikb.add(InlineKeyboardButton('Оставить этот номер', callback_data='this'))
+    ikb.add(InlineKeyboardButton('Выбрать другой номер', callback_data='yes'))  # 'yes' нужен для корректного возврата к выбору номера
+    ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
+    return ikb
+
+
+def get_authorization_ikb():
+    ikb = InlineKeyboardMarkup(resize_keyboard=True)
+    ikb.add(InlineKeyboardButton('Перейти к авторизации', callback_data='auth'))
+    ikb.add(InlineKeyboardButton('Выбрать другой номер', callback_data='yes'))
+    ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
+    return ikb
+
+
+def get_card_check_ikb():
+    ikb = InlineKeyboardMarkup(resize_keyboard=True)
+    ikb.add(InlineKeyboardButton('Верно', callback_data='true'))
+    ikb.add(InlineKeyboardButton('Ввести заново', callback_data='false'))
+    ikb.add(InlineKeyboardButton('Вернуться в главное меню', callback_data='main_menu'))
+    return ikb
+
+
 def get_additional_services():
     ikb = InlineKeyboardMarkup(resize_keyboard=True)
     ikb.add(InlineKeyboardButton('Кинотеатр', callback_data='cinema'))

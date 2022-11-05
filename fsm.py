@@ -18,4 +18,13 @@ class BookingRooms(StatesGroup):
     choosing_date = State()  # состояние выбора даты заселения
     checking_rooms = State()  # проверка номеров
     choosing_room = State()  # выбор номера
+    confirm_room_selection = State()  # подтверждение выбора номера
+    authorization = State()  # авторизация пользователя
+    user_data = State()  # данные пользователя
+    card_num = State()  # номер банковской карты
+    card_date = State()  # срок действия банковской карты
+    card_holders_name = State()  # имя держателя банковской карты
+    card_cvv = State()  # cvv банковской карты
+    card_check = State()  # проверка данных банковской карты
+
     payment = State()  # состояние оплаты

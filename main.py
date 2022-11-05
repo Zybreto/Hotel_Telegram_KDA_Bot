@@ -346,9 +346,144 @@ async def choose_room(callback: types.CallbackQuery, state: FSMContext):
         await start_command(callback.message)
     else:
         await callback.message.delete()
+        ph = await bot.send_photo(chat_id=callback.message.chat.id,
+                                  photo=open(f'res/images/room_{callback.data}.png', 'rb'))
         await bot.send_message(chat_id=callback.message.chat.id,
-                               text='vse',
+                               text='Подтвердите выбор номера',
+                               reply_markup=get_confirm_room_selection_ikb())
+        await BookingRooms.next()
+        async with state.proxy() as date:
+            date['room_id'] = callback.data
+            date['ph'] = ph.message_id
+
+
+@dp.callback_query_handler(state=BookingRooms.confirm_room_selection)
+async def confirm_room_selection(callback: types.CallbackQuery, state: FSMContext):
+    if callback.data == 'main_menu':
+        await callback.answer('Возвращаемся в главное меню')
+        await state.finish()
+        await start_command(callback.message)
+    elif callback.data == 'yes':
+        await BookingRooms.checking_rooms.set()
+        async with state.proxy() as data:
+            await bot.delete_message(callback.message.chat.id, data['ph'])
+            await check_room(callback, state)
+    elif callback.data == 'this':
+        async with state.proxy() as data:
+            await bot.delete_message(callback.message.chat.id, data['ph'])
+            await callback.message.edit_text(f'Стоимость проживания в этом номере составляет {get_room_cost_by_id(data["room_id"])[0]}₽\n' \
+                                             'Продолжить?',
+                                             reply_markup=get_authorization_ikb())
+        await BookingRooms.next()
+
+
+@dp.callback_query_handler(state=BookingRooms.authorization)
+async def authorization(callback: types.CallbackQuery, state: FSMContext):
+    if callback.data == 'main_menu':
+        await callback.answer('Возвращаемся в главное меню')
+        await state.finish()
+        await start_command(callback.message)
+    elif callback.data == 'yes':
+        await BookingRooms.checking_rooms.set()
+        async with state.proxy() as data:
+            await bot.delete_message(callback.message.chat.id, data['ph'])
+            await check_room(callback, state)
+    elif callback.data == 'auth':
+        if user_in_db(callback.from_user.id):
+            # сообщение для подтверждения оплаты
+            #
+            BookingRooms.payment.set()
+        else:
+            await callback.message.edit_text('Введите свою фамилию, имя и email через пробел:',
+                                             reply_markup=get_main_menu_ikb())
+            await BookingRooms.next()
+
+
+@dp.message_handler(state=BookingRooms.user_data)
+async def user_data(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['surname'], data['name'], data['email'] = message.text.split()
+        await bot.send_message(message.chat.id,
+                               'Введите номер банковской карты (без пробелов):',
                                reply_markup=get_main_menu_ikb())
+    await BookingRooms.next()
+
+
+@dp.message_handler(state=BookingRooms.card_num)
+async def card_num(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['card_num'] = message.text
+        await bot.send_message(message.chat.id,
+                               'Введите срок действия банковской карты:',
+                                reply_markup=get_main_menu_ikb())
+    await BookingRooms.next()
+
+
+@dp.message_handler(state=BookingRooms.card_date)
+async def card_date(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['card_date'] = message.text
+        await bot.send_message(message.chat.id,
+                               'Введите имя держателя банковской карты:',
+                                reply_markup=get_main_menu_ikb())
+    await BookingRooms.next()
+
+
+@dp.message_handler(state=BookingRooms.card_holders_name)
+async def card_holders_name(message: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        data['card_holders_name'] = message.text
+        await bot.send_message(message.chat.id,
+                               'Введите CVV-код банковской карты:',
+                                reply_markup=get_main_menu_ikb())
+    await BookingRooms.next()
+
+
+@dp.message_handler(state=BookingRooms.card_cvv)
+async def card_cvv(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['cvv'] = message.text
+        await bot.send_message(message.chat.id,
+                               'Проверьте данные банковской карты:\n'\
+                                 f'{data["card_num"]}\n'\
+                                 f'{data["card_date"]}\n'\
+                                 f'{data["card_holders_name"]}\n'\
+                                 f'{data["cvv"]}',
+                                 reply_markup=get_card_check_ikb())
+    await BookingRooms.next()
+
+
+@dp.callback_query_handler(state=BookingRooms.card_check)
+async def card_check(callback: types.CallbackQuery, state: FSMContext):
+    if callback.data == 'main_menu':
+        await callback.answer('Возвращаемся в главное меню')
+        await state.finish()
+        await start_command(callback.message)
+    elif callback.data == 'false':
+        await BookingRooms.card_num.set()
+        await callback.message.edit_text('Введите номер банковской карты (без пробелов):',
+                                         reply_markup=get_main_menu_ikb())
+    elif callback.data == 'true':
+        async with state.proxy() as data:
+            DATA = [
+                ["Date", "Name", "Volume", "Price (Rs.)"],
+                [str(data['day'])+str(data['month'])+str(data['year']),
+                 f"KDA Hotel {get_room_name(data['room_id'])} (room #{data['room_id']})",
+                 "1 day",
+                 f"{get_room_cost_by_id(data['room_id'])[0]}₽"
+                 ],
+                ["Discount", "", "", "- 0"],
+                ["Total", "", "", f"{get_room_cost_by_id(data['room_id'])[0]}₽"]
+            ]
+            path = f"res/pdf/receipt_{str(data['day'])+str(data['month'])+str(data['year'])}_{data['room_id']}.pdf"
+            pdf = SimpleDocTemplate(path, pagesize=A4)
+            table = Table(DATA, style=style)
+            pdf.build([title, table])
+
+            await callback.message.delete()
+            await bot.send_document(callback.message.chat.id,
+                                    document=open(path, 'rb'),
+                                    caption='Чек об оплате')
 
 
 @dp.message_handler(Text(equals='Об отеле'))
