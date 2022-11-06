@@ -467,7 +467,7 @@ async def card_check(callback: types.CallbackQuery, state: FSMContext):
         async with state.proxy() as data:
             DATA = [
                 ["Date", "Name", "Volume", "Price (Rs.)"],
-                [str(data['day'])+str(data['month'])+str(data['year']),
+                [f"{data['day']}.{data['month']}.{data['year']}",
                  f"KDA Hotel {get_room_name(data['room_id'])} (room #{data['room_id']})",
                  "1 day",
                  f"{get_room_cost_by_id(data['room_id'])[0]}₽"
