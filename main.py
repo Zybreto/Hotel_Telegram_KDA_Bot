@@ -477,42 +477,65 @@ async def authorization(callback: types.CallbackQuery, state: FSMContext):
             #
             BookingRooms.payment.set()
         else:
-            await callback.message.edit_text('Введите свою фамилию, имя и email через пробел:',
-                                             reply_markup=get_main_menu_ikb())
+            async with state.proxy() as data:
+                data['auth_cb'] = callback
+                data['auth_mess'] = callback.message
+                await callback.message.edit_text('Введите свою фамилию, имя и email через пробел:',
+                                                 reply_markup=get_main_menu_ikb())
             await BookingRooms.next()
+
 
 
 @dp.message_handler(state=BookingRooms.user_data)
 async def user_data(message: types.Message, state: FSMContext):
     """Функция-обработчик текстового сообщения, содержащего данные пользователя"""
-    async with state.proxy() as data:
-        data['surname'], data['name'], data['email'] = message.text.split()
-        await bot.send_message(message.chat.id,
-                               'Введите номер банковской карты (без пробелов):',
-                               reply_markup=get_main_menu_ikb())
-    await BookingRooms.next()
+    try:
+        async with state.proxy() as data:
+            data['surname'], data['name'], data['email'] = message.text.split()
+            await bot.send_message(message.chat.id,
+                                   'Введите номер банковской карты (без пробелов):',
+                                   reply_markup=get_main_menu_ikb())
+            await BookingRooms.next()
+    except:
+        await message.delete()
+        async with state.proxy() as data:
+            await data['auth_mess'].edit_text('Неверные данные, попробуйте снова')
+            await BookingRooms.authorization.set()
+            await authorization(data['auth_cb'], state)
 
 
 @dp.message_handler(state=BookingRooms.card_num)
 async def card_num(message: types.Message, state: FSMContext):
     """Функция-обработчик текстового сообщения, содержащего номер карты"""
     async with state.proxy() as data:
-        data['card_num'] = message.text
-        await bot.send_message(message.chat.id,
-                               'Введите срок действия банковской карты:',
-                                reply_markup=get_main_menu_ikb())
-    await BookingRooms.next()
+        try:
+            data['card_num'] = int(message.text)
+            if len(message.text) != 16:
+                raise
+            await bot.send_message(message.chat.id,
+                                   'Введите срок действия банковской карты:',
+                                    reply_markup=get_main_menu_ikb())
+            await BookingRooms.next()
+        except:
+            await BookingRooms.user_data.set()
+            await user_data(message, state)
 
 
 @dp.message_handler(state=BookingRooms.card_date)
 async def card_date(message: types.Message, state: FSMContext):
     """Функция-обработчик текстового сообщения, содержащего время действия карты"""
     async with state.proxy() as data:
-        data['card_date'] = message.text
-        await bot.send_message(message.chat.id,
-                               'Введите имя держателя банковской карты:',
-                                reply_markup=get_main_menu_ikb())
-    await BookingRooms.next()
+        try:
+            if len(message.text) > 10:
+                raise
+            data['card_date'] = message.text
+            await bot.send_message(message.chat.id,
+                                   'Введите имя держателя банковской карты:',
+                                    reply_markup=get_main_menu_ikb())
+            await BookingRooms.next()
+        except:
+            await BookingRooms.card_num.set()
+            await card_num(message, state)
 
 
 @dp.message_handler(state=BookingRooms.card_holders_name)
@@ -530,15 +553,21 @@ async def card_holders_name(message: types.CallbackQuery, state: FSMContext):
 async def card_cvv(message: types.Message, state: FSMContext):
     """Функция-обработчик текстового сообщения, содержащего cvv"""
     async with state.proxy() as data:
-        data['cvv'] = message.text
-        await bot.send_message(message.chat.id,
-                               'Проверьте данные банковской карты:\n'\
-                                 f'{data["card_num"]}\n'\
-                                 f'{data["card_date"]}\n'\
-                                 f'{data["card_holders_name"]}\n'\
-                                 f'{data["cvv"]}',
-                                 reply_markup=get_card_check_ikb())
-    await BookingRooms.next()
+        try:
+            data['cvv'] = int(message.text)
+            if len(message.text) != 3:
+                raise
+            await bot.send_message(message.chat.id,
+                                   'Проверьте данные банковской карты:\n'\
+                                     f'{data["card_num"]}\n'\
+                                     f'{data["card_date"]}\n'\
+                                     f'{data["card_holders_name"]}\n'\
+                                     f'{data["cvv"]}',
+                                     reply_markup=get_card_check_ikb())
+            await BookingRooms.next()
+        except:
+            await BookingRooms.card_holders_name.set()
+            await card_holders_name(message, state)
 
 
 @dp.callback_query_handler(state=BookingRooms.card_check)
@@ -557,6 +586,8 @@ async def card_check(callback: types.CallbackQuery, state: FSMContext):
                                          reply_markup=get_main_menu_ikb())
     elif callback.data == 'true':
         async with state.proxy() as data:
+            add_occupied_room(data['room_id'], data['day'], data['month'], data['year'])
+
             DATA = [
                 ["Date", "Name", "Volume", "Price (Rs.)"],
                 [f"{data['day']}.{data['month']}.{data['year']}",
@@ -575,7 +606,8 @@ async def card_check(callback: types.CallbackQuery, state: FSMContext):
             await callback.message.delete()
             await bot.send_document(callback.message.chat.id,
                                     document=open(path, 'rb'),
-                                    caption='Чек об оплате')
+                                    caption='Чек об оплате',
+                                    reply_markup=get_main_menu_ikb())
 
 
 @dp.message_handler(Text(equals='Об отеле'))
