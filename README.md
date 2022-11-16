@@ -4,4 +4,6 @@
 
 </div>
 
-![example](res/samples/sample.mp4)
+
+https://user-images.githubusercontent.com/57868987/202293854-1d3bf812-0b4d-4eac-ae5c-2de06a33e589.mp4
+
